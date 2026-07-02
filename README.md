@@ -1,6 +1,13 @@
 # 🚀 SmartURL
 
-A production-ready URL Shortener built using **Java 21**, **Spring Boot**, and **PostgreSQL**. SmartURL provides fast, secure, and scalable URL shortening with a clean layered architecture, REST APIs, Swagger documentation, and Docker support.
+A production-ready URL Shortener built using **Java 21**, **Spring Boot**, **PostgreSQL**, and **Docker**.
+
+![Java](https://img.shields.io/badge/Java-21-orange)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5-brightgreen)
+![Postgres](https://img.shields.io/badge/PostgreSQL-16-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+
+![Build](https://github.com/suyashsachan2304-lab/smarturl/actions/workflows/build.yml/badge.svg)
 
 ---
 
@@ -99,7 +106,7 @@ Response
 ### Clone Repository
 
 ```bash
-git clone https://github.com/<YOUR_USERNAME>/smarturl.git
+git clone https://github.com/suyashsachan2304-lab/smarturl.git
 
 cd smarturl
 ```
