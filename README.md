@@ -176,23 +176,111 @@ GET /actuator/health
 
 ## 🏛 Architecture
 
+```mermaid
+flowchart TD
+
+    A[Client / Browser]
+
+    B[REST Controller]
+
+    C[Service Layer]
+
+    D[Mapper]
+
+    E[Repository]
+
+    F[(PostgreSQL)]
+
+    G[Redis Cache]
+
+    H[Swagger UI]
+
+    A -->|HTTP Request| B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+
+    H --> B
+    C --> G
 ```
-Client
-   │
-   ▼
-REST Controller
-   │
-   ▼
-Service Layer
-   │
-   ▼
-Mapper
-   │
-   ▼
-Repository
-   │
-   ▼
-PostgreSQL
+
+## 🔄 URL Shortening Flow
+
+```mermaid
+sequenceDiagram
+
+    participant Client
+    participant Controller
+    participant Service
+    participant Repository
+    participant PostgreSQL
+
+    Client->>Controller: POST /api/v1/urls
+    Controller->>Service: shortenUrl(request)
+    Service->>Repository: save(url)
+    Repository->>PostgreSQL: INSERT URL_MAPPING
+    PostgreSQL-->>Repository: Success
+    Repository-->>Service: UrlMapping
+    Service-->>Controller: ShortenUrlResponse
+    Controller-->>Client: 201 Created
+```
+
+## 🔗 Redirect Flow
+
+```mermaid
+sequenceDiagram
+
+    participant User
+    participant Controller
+    participant Service
+    participant Repository
+    participant PostgreSQL
+
+    User->>Controller: GET /{shortCode}
+    Controller->>Service: getOriginalUrl()
+    Service->>Repository: findByShortCode()
+    Repository->>PostgreSQL: SELECT
+    PostgreSQL-->>Repository: URL
+    Repository-->>Service: UrlMapping
+    Service-->>Controller: Original URL
+    Controller-->>User: HTTP 302 Redirect
+```
+
+## 🗄 Database Schema
+
+```mermaid
+erDiagram
+
+    URL_MAPPING {
+
+        BIGINT id PK
+        TEXT original_url
+        VARCHAR short_code
+        BIGINT click_count
+        BOOLEAN active
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+        TIMESTAMP expires_at
+
+    }
+```
+
+## 📁 Layered Architecture
+
+```mermaid
+graph LR
+
+A[Controller]
+B[Service]
+C[Mapper]
+D[Repository]
+E[(Database)]
+
+A --> B
+B --> C
+C --> D
+D --> E
 ```
 
 ---
