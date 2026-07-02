@@ -163,6 +163,17 @@ Entity:
 
 ---
 
+## ❤️ Health Check
+```
+GET /actuator/health
+```
+
+```json
+{
+  "status": "UP"
+}
+```
+
 ## 🏛 Architecture
 
 ```
