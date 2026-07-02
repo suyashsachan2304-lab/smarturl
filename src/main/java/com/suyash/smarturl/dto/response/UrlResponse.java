@@ -1,12 +1,12 @@
 package com.suyash.smarturl.dto.response;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
-import java.time.LocalDateTime;
-
-@Data
+@Getter
+@Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UrlResponse {
 
     private Long id;
@@ -15,10 +15,14 @@ public class UrlResponse {
 
     private String shortCode;
 
+    private String shortUrl;
+
     private Long clickCount;
 
     private Boolean active;
 
-    private LocalDateTime createdAt;
+    private String expiresAt;
+
+    private String createdAt;
 
 }

@@ -1,31 +1,36 @@
 package com.suyash.smarturl.util;
 
+import com.suyash.smarturl.config.AppProperties;
+import com.suyash.smarturl.constants.AppConstants;
+import org.springframework.stereotype.Component;
+
 import java.security.SecureRandom;
 
+@Component
 public class ShortCodeGenerator {
-
-    private static final String CHARACTERS =
-            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    private ShortCodeGenerator(){}
+    private final AppProperties appProperties;
 
-    public static String generate(int length){
+    public ShortCodeGenerator(AppProperties appProperties) {
+        this.appProperties = appProperties;
+    }
 
-        StringBuilder builder = new StringBuilder();
+    public String generate() {
 
-        for(int i=0;i<length;i++){
+        int length = appProperties.getShortCodeLength();
 
+        StringBuilder builder = new StringBuilder(length);
+
+        for (int i = 0; i < length; i++) {
             builder.append(
-                    CHARACTERS.charAt(
-                            RANDOM.nextInt(CHARACTERS.length())
+                    AppConstants.BASE62.charAt(
+                            RANDOM.nextInt(AppConstants.BASE62.length())
                     )
             );
         }
 
         return builder.toString();
-
     }
-
 }

@@ -1,17 +1,23 @@
 package com.suyash.smarturl.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import lombok.Data;
+import jakarta.validation.constraints.Size;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ShortenUrlRequest {
 
-    @NotBlank(message = "URL cannot be empty")
     @Pattern(
             regexp = "^(https?://).+",
-            message = "URL must start with http:// or https://"
+            message = "Please provide a valid http/https URL"
     )
-    private String originalUrl;
+    private String url;
+
+    @Size(min = 4, max = 20)
+    private String customAlias;
 
 }

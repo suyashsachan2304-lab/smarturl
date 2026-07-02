@@ -1,0 +1,23 @@
+spring:
+
+  datasource:
+
+    url: jdbc:postgresql://postgres:5432/smarturl
+
+    username: 
+
+    password: 
+
+  data:
+
+    redis:
+
+      host: redis
+
+      port: 6379
+
+  jpa:
+
+    hibernate:
+
+      ddl-auto: update

@@ -1,16 +1,18 @@
 package com.suyash.smarturl.dto.response;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ShortenUrlResponse {
 
-    private String originalUrl;
+    private String shortUrl;
 
     private String shortCode;
 
-    private String shortUrl;
+    private String originalUrl;
 
 }

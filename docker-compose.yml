@@ -1,0 +1,78 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:17
+    container_name: smarturl-postgres
+
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: smarturl
+      POSTGRES_USER: 
+      POSTGRES_PASSWORD: 
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+
+    container_name: smarturl-redis
+
+    restart: unless-stopped
+
+    ports:
+      - "6379:6379"
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  smarturl:
+
+    build: .
+
+    container_name: smarturl
+
+    restart: unless-stopped
+
+    depends_on:
+
+      postgres:
+        condition: service_healthy
+
+      redis:
+        condition: service_healthy
+
+    ports:
+      - "8080:8080"
+
+    environment:
+
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/smarturl
+
+      SPRING_DATASOURCE_USERNAME: 
+
+      SPRING_DATASOURCE_PASSWORD: 
+
+      SPRING_DATA_REDIS_HOST: redis
+
+      SPRING_DATA_REDIS_PORT: 6379
+
+      SPRING_PROFILES_ACTIVE: docker
+
+volumes:
+  postgres_data:

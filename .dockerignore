@@ -1,0 +1,12 @@
+target/*
+!target/smarturl-1.0.0.jar
+
+.git/
+
+.idea/
+
+.vscode/
+
+*.iml
+
+README.md
