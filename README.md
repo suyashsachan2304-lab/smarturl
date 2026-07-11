@@ -18,7 +18,7 @@ A production-ready URL Shortener built using **Java 21**, **Spring Boot**, **Pos
 - 🔗 Shorten long URLs
 - 🚀 Redirect using unique short codes
 - ⏳ URL Expiration Support
-- 📊 Click tracking
+- 📊 Click tracking 
 - ✅ Input validation 
 - 🌍 RESTful APIs 
 - 📖 Interactive Swagger/OpenAPI documentation
