@@ -6,6 +6,8 @@ A production-ready URL Shortener built using **Java 21**, **Spring Boot**, **Pos
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5-brightgreen)
 ![Postgres](https://img.shields.io/badge/PostgreSQL-16-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
+![Release](https://img.shields.io/github/v/release/suyashsachan2304-lab/smarturl)
+![GitHub Release](https://img.shields.io/github/release-date/suyashsachan2304-lab/smarturl)
 
 ![Build](https://github.com/suyashsachan2304-lab/smarturl/actions/workflows/build.yml/badge.svg)
 
@@ -297,6 +299,103 @@ B --> C
 C --> D
 D --> E
 ```
+
+---
+
+# 🚀 Automated Releases
+
+SmartURL uses **GitHub Actions** together with **Release Please** to automate the release lifecycle.
+
+Once changes are pushed to the `main` branch using **Conventional Commits**, the release process is automatically managed.
+
+## 📦 Release Workflow
+
+```text
+Developer
+    │
+    ▼
+git commit
+    │
+    ▼
+git push origin main
+    │
+    ▼
+GitHub Actions CI
+    │
+    ├── Build Project
+    ├── Run Tests
+    ├── Build Docker Image
+    │
+    ▼
+Release Please
+    │
+    ├── Determine Next Semantic Version
+    ├── Update CHANGELOG
+    ├── Create Release Pull Request
+    │
+Merge Release PR
+    │
+    ▼
+Automatic Git Tag
+    │
+    ▼
+GitHub Release
+    │
+    ├── Generate Release Notes
+    └── Upload Executable JAR
+```
+
+---
+
+## ✍️ Conventional Commits
+
+Release versioning is determined automatically from commit messages.
+
+| Commit Type | Example | Version Bump |
+|-------------|---------|--------------|
+| **feat** | `feat: add Redis cache` | Minor (`1.0.2 → 1.1.0`) |
+| **fix** | `fix: validate custom alias` | Patch (`1.0.2 → 1.0.3`) |
+| **docs** | `docs: update README` | No Release |
+| **refactor** | `refactor: simplify service layer` | No Release |
+| **feat!** | `feat!: redesign API` | Major (`1.x.x → 2.0.0`) |
+
+---
+
+## 🚀 Creating a Release
+
+No manual versioning or tagging is required.
+
+Simply commit using the Conventional Commit format and push to the `main` branch.
+
+```bash
+git add .
+git commit -m "feat: add Redis caching"
+git push origin main
+```
+
+Release Please automatically:
+
+- 📈 Calculates the next semantic version
+- 📝 Updates the `CHANGELOG.md`
+- 🔀 Creates a Release Pull Request
+- 🏷 Creates the Git tag after the Release PR is merged
+- 📦 Publishes a GitHub Release
+- 📄 Generates release notes
+- ⬆️ Uploads the application JAR
+
+---
+
+## ⚙️ CI/CD Pipeline
+
+Every push to the repository automatically triggers:
+
+- ✅ Maven Build
+- ✅ Unit Tests
+- ✅ Docker Image Build
+- ✅ GitHub Release Pipeline
+- ✅ Artifact Upload
+
+This ensures every published release is reproducible and built from validated source code.
 
 ---
 
