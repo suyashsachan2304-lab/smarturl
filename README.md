@@ -20,7 +20,7 @@ A production-ready URL Shortener built using **Java 21**, **Spring Boot**, **Pos
 - ⏳ URL Expiration Support
 - 📊 Click tracking
 - ✅ Input validation
-- 🌍 RESTful APIs
+- 🌍 RESTful APIs 
 - 📖 Interactive Swagger/OpenAPI documentation
 - ⚡ Global exception handling
 - 🗄 PostgreSQL persistence
