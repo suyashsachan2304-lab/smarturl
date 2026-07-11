@@ -18,9 +18,10 @@ A production-ready URL Shortener built using **Java 21**, **Spring Boot**, **Pos
 - 🔗 Shorten long URLs
 - 🚀 Redirect using unique short codes
 - ⏳ URL Expiration Support
-- 📊 Click tracking 
-- ✅ Input validation 
-- 🌍 RESTful APIs 
+- 📊 Click tracking
+- 🎯 Custom Alias Support
+- ✅ Input validation
+- 🌍 RESTful APIs
 - 📖 Interactive Swagger/OpenAPI documentation
 - ⚡ Global exception handling
 - 🗄 PostgreSQL persistence
@@ -70,6 +71,8 @@ src
 | POST | `/api/v1/urls` | Create a short URL |
 | GET | `/api/v1/urls` | Get all URLs |
 | GET | `/api/v1/urls/{shortCode}` | Redirect to original URL |
+| GET | `/api/v1/urls/{shortCode}/details` | Get URL Details |
+| DELETE | `/api/v1/urls/{shortCode}` | Delete URL |
 
 ---
 
@@ -96,7 +99,8 @@ POST /api/v1/urls
 ```json
 {
     "url":"https://google.com",
-    "expiresAt":"2027-12-31T23:59:59"
+    "expiresAt":"2027-12-31T23:59:59",
+    "customAlias":"google"
 }
 ```
 
@@ -108,8 +112,8 @@ Response
   "success":true,
   "message":"Short URL created successfully.",
   "data":{
-      "shortUrl":"http://localhost:8080/AbCd123",
-      "shortCode":"AbCd123",
+      "shortUrl":"http://localhost:8080/google",
+      "shortCode":"google",
       "originalUrl":"https://google.com",
       "expiresAt":"2027-12-31T23:59:59"
   }
@@ -401,16 +405,13 @@ This ensures every published release is reproducible and built from validated so
 
 ## 🚧 Roadmap
 
-- JWT Authentication
-- User Management
-- Custom Alias Support
-- URL Expiration
 - Redis Caching
 - Kafka Click Analytics
 - QR Code Generation
 - Rate Limiting
+- JWT Authentication
+- User Management
 - Prometheus & Grafana Monitoring
-- GitHub Actions CI/CD
 - Flyway Database Migrations
 - Testcontainers Integration
 
