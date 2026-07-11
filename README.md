@@ -19,7 +19,7 @@ A production-ready URL Shortener built using **Java 21**, **Spring Boot**, **Pos
 - 🚀 Redirect using unique short codes
 - ⏳ URL Expiration Support
 - 📊 Click tracking
-- ✅ Input validation
+- ✅ Input validation 
 - 🌍 RESTful APIs 
 - 📖 Interactive Swagger/OpenAPI documentation
 - ⚡ Global exception handling
