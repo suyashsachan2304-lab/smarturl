@@ -29,13 +29,21 @@ public class UrlController {
 
         @PostMapping
         @Operation(summary = "Create Short URL", description = """
-                        Creates a new shortened URL.
+                        Creates a shortened URL.
 
-                        If expiresAt is not provided,
-                        the application uses the default expiry configured in the application.
+                        Supports:
 
-                        If expiresAt is provided,
-                        it must be a future date and time.
+                        • Random short code generation
+
+                        • Custom aliases
+
+                        • URL expiration
+
+                        If customAlias is omitted,
+                        a random short code is generated.
+
+                        If expiresAt is omitted,
+                        the default expiry configuration is used.
                         """)
         public ResponseEntity<ApiResponse<ShortenUrlResponse>> shortenUrl(
                         @Valid @RequestBody ShortenUrlRequest request) {

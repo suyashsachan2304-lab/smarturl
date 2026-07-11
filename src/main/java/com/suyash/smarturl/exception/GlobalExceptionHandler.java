@@ -130,6 +130,30 @@ public class GlobalExceptionHandler {
                                 null);
         }
 
+        @ExceptionHandler(DuplicateAliasException.class)
+        public ResponseEntity<ErrorResponse> handleDuplicateAlias(
+                        DuplicateAliasException ex,
+                        HttpServletRequest request) {
+
+                return buildResponse(
+                                HttpStatus.CONFLICT,
+                                ex.getMessage(),
+                                request,
+                                null);
+        }
+
+        @ExceptionHandler(InvalidAliasException.class)
+        public ResponseEntity<ErrorResponse> handleInvalidAlias(
+                        InvalidAliasException ex,
+                        HttpServletRequest request) {
+
+                return buildResponse(
+                                HttpStatus.BAD_REQUEST,
+                                ex.getMessage(),
+                                request,
+                                null);
+        }
+
         private ResponseEntity<ErrorResponse> buildResponse(
                         HttpStatus status,
                         String message,

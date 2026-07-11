@@ -5,10 +5,12 @@ import com.suyash.smarturl.dto.response.ShortenUrlResponse;
 import com.suyash.smarturl.dto.response.UrlResponse;
 import com.suyash.smarturl.entity.UrlMapping;
 import com.suyash.smarturl.exception.UrlNotFoundException;
+import com.suyash.smarturl.exception.DuplicateAliasException;
 import com.suyash.smarturl.exception.UrlExpiredException;
 import com.suyash.smarturl.mapper.UrlMapper;
 import com.suyash.smarturl.repository.UrlRepository;
 import com.suyash.smarturl.service.UrlService;
+import com.suyash.smarturl.util.AliasValidator;
 import com.suyash.smarturl.util.ShortCodeGenerator;
 import com.suyash.smarturl.util.UrlValidator;
 import jakarta.transaction.Transactional;
@@ -25,17 +27,20 @@ public class UrlServiceImpl implements UrlService {
     private final UrlMapper urlMapper;
     private final UrlValidator urlValidator;
     private final ShortCodeGenerator shortCodeGenerator;
+    private final AliasValidator aliasValidator;
 
     public UrlServiceImpl(
             UrlRepository urlRepository,
             UrlMapper urlMapper,
             UrlValidator urlValidator,
-            ShortCodeGenerator shortCodeGenerator) {
+            ShortCodeGenerator shortCodeGenerator,
+            AliasValidator aliasValidator) {
 
         this.urlRepository = urlRepository;
         this.urlMapper = urlMapper;
         this.urlValidator = urlValidator;
         this.shortCodeGenerator = shortCodeGenerator;
+        this.aliasValidator = aliasValidator;
     }
 
     @Override
@@ -47,6 +52,12 @@ public class UrlServiceImpl implements UrlService {
 
         request.setUrl(normalizedUrl);
 
+        if (request.getCustomAlias() != null &&
+                !request.getCustomAlias().isBlank()) {
+
+            return createShortUrl(request);
+        }
+
         return urlRepository.findByOriginalUrlAndActiveTrue(normalizedUrl)
                 .filter(this::isNotExpired)
                 .map(urlMapper::toShortenResponse)
@@ -56,7 +67,39 @@ public class UrlServiceImpl implements UrlService {
     private ShortenUrlResponse createShortUrl(
             ShortenUrlRequest request) {
 
-        String shortCode = generateUniqueShortCode();
+        String shortCode;
+
+        if (request.getCustomAlias() != null &&
+                !request.getCustomAlias().isBlank()) {
+
+            String alias = request.getCustomAlias()
+                    .trim()
+                    .toLowerCase();
+
+            aliasValidator.validate(alias);
+
+            if (urlRepository.existsByShortCode(alias)) {
+
+                throw new DuplicateAliasException(
+                        "Custom alias already exists.");
+            }
+
+            shortCode = alias;
+
+            if (urlRepository.existsByShortCodeIgnoreCase(
+                    request.getCustomAlias())) {
+
+                throw new DuplicateAliasException(
+                        "Custom alias already exists.");
+            }
+
+            shortCode = request.getCustomAlias().trim();
+
+        } else {
+
+            shortCode = generateUniqueShortCode();
+
+        }
 
         UrlMapping entity = urlMapper.toEntity(request, shortCode);
 
@@ -116,6 +159,8 @@ public class UrlServiceImpl implements UrlService {
     }
 
     private UrlMapping getActiveUrlMapping(String shortCode) {
+
+        shortCode = shortCode.trim().toLowerCase();
 
         UrlMapping entity = urlRepository.findByShortCodeAndActiveTrue(shortCode)
                 .orElseThrow(() -> new UrlNotFoundException("Short URL not found."));
