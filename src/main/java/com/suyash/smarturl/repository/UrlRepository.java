@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -14,11 +15,16 @@ public interface UrlRepository extends JpaRepository<UrlMapping, Long> {
 
     Optional<UrlMapping> findByOriginalUrl(String originalUrl);
 
+    Optional<UrlMapping> findByOriginalUrlAndActiveTrue(String originalUrl);
+
     boolean existsByShortCode(String shortCode);
+
+    boolean existsByShortCodeAndActiveTrue(String shortCode);
 
     Optional<UrlMapping> findByShortCodeAndActiveTrue(String shortCode);
 
     long countByActiveTrue();
 
-    void deleteByExpiresAtBefore(LocalDateTime now);
+    List<UrlMapping> findByActiveTrueAndExpiresAtBefore(LocalDateTime now);
+
 }

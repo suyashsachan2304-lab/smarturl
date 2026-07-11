@@ -21,102 +21,108 @@ import java.util.List;
 @Tag(name = "URL APIs", description = "Smart URL REST APIs")
 public class UrlController {
 
-    private final UrlService urlService;
+        private final UrlService urlService;
 
-    public UrlController(UrlService urlService) {
-        this.urlService = urlService;
-    }
+        public UrlController(UrlService urlService) {
+                this.urlService = urlService;
+        }
 
-    @PostMapping
-    @Operation(summary = "Create Short URL")
-    public ResponseEntity<ApiResponse<ShortenUrlResponse>> shortenUrl(
-            @Valid @RequestBody ShortenUrlRequest request
-    ) {
+        @PostMapping
+        @Operation(summary = "Create Short URL", description = """
+                        Creates a new shortened URL.
 
-        ShortenUrlResponse response =
-                urlService.shortenUrl(request);
+                        If expiresAt is not provided,
+                        the application uses the default expiry configured in the application.
 
-        ApiResponse<ShortenUrlResponse> apiResponse =
-                ApiResponse.<ShortenUrlResponse>builder()
-                        .status(HttpStatus.CREATED.value())
-                        .success(true)
-                        .message(AppConstants.URL_CREATED)
-                        .data(response)
-                        .build();
+                        If expiresAt is provided,
+                        it must be a future date and time.
+                        """)
+        public ResponseEntity<ApiResponse<ShortenUrlResponse>> shortenUrl(
+                        @Valid @RequestBody ShortenUrlRequest request) {
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(apiResponse);
-    }
+                ShortenUrlResponse response = urlService.shortenUrl(request);
 
-    @GetMapping("/{shortCode}/details")
-    @Operation(summary = "Get URL Details")
-    public ResponseEntity<ApiResponse<UrlResponse>> getUrl(
-            @PathVariable String shortCode
-    ) {
+                ApiResponse<ShortenUrlResponse> apiResponse = ApiResponse.<ShortenUrlResponse>builder()
+                                .status(HttpStatus.CREATED.value())
+                                .success(true)
+                                .message(AppConstants.URL_CREATED)
+                                .data(response)
+                                .build();
 
-        UrlResponse response =
-                urlService.getUrl(shortCode);
+                return ResponseEntity
+                                .status(HttpStatus.CREATED)
+                                .body(apiResponse);
+        }
 
-        ApiResponse<UrlResponse> apiResponse =
-                ApiResponse.<UrlResponse>builder()
-                        .status(HttpStatus.OK.value())
-                        .success(true)
-                        .message("URL fetched successfully.")
-                        .data(response)
-                        .build();
+        @GetMapping("/{shortCode}/details")
+        @Operation(summary = "Get URL Details")
+        public ResponseEntity<ApiResponse<UrlResponse>> getUrl(
+                        @PathVariable String shortCode) {
 
-        return ResponseEntity.ok(apiResponse);
-    }
+                UrlResponse response = urlService.getUrl(shortCode);
 
-    @GetMapping("/{shortCode}")
-    @Operation(summary = "Redirect to Original URL")
-    public ResponseEntity<Void> redirect(
-            @PathVariable String shortCode
-    ) {
+                ApiResponse<UrlResponse> apiResponse = ApiResponse.<UrlResponse>builder()
+                                .status(HttpStatus.OK.value())
+                                .success(true)
+                                .message("URL fetched successfully.")
+                                .data(response)
+                                .build();
 
-        String originalUrl =
-                urlService.getOriginalUrl(shortCode);
+                return ResponseEntity.ok(apiResponse);
+        }
 
-        return ResponseEntity.status(HttpStatus.FOUND)
-                .location(URI.create(originalUrl))
-                .build();
-    }
+        @GetMapping("/{shortCode}")
+        @Operation(summary = "Redirect to Original URL", description = """
+                        Redirects the client to the original URL.
 
-    @GetMapping
-    @Operation(summary = "Get All URLs")
-    public ResponseEntity<ApiResponse<List<UrlResponse>>> getAllUrls() {
+                        Possible responses
 
-        List<UrlResponse> response =
-                urlService.getAllUrls();
+                        302 - Redirect
 
-        ApiResponse<List<UrlResponse>> apiResponse =
-                ApiResponse.<List<UrlResponse>>builder()
-                        .status(HttpStatus.OK.value())
-                        .success(true)
-                        .message("URLs fetched successfully.")
-                        .data(response)
-                        .build();
+                        404 - Short URL not found
 
-        return ResponseEntity.ok(apiResponse);
-    }
+                        410 - Short URL has expired
+                        """)
+        public ResponseEntity<Void> redirect(
+                        @PathVariable String shortCode) {
 
-    @DeleteMapping("/{shortCode}")
-    @Operation(summary = "Delete Short URL")
-    public ResponseEntity<ApiResponse<Void>> deleteUrl(
-            @PathVariable String shortCode
-    ) {
+                String originalUrl = urlService.getOriginalUrl(shortCode);
 
-        urlService.deleteUrl(shortCode);
+                return ResponseEntity.status(HttpStatus.FOUND)
+                                .location(URI.create(originalUrl))
+                                .build();
+        }
 
-        ApiResponse<Void> apiResponse =
-                ApiResponse.<Void>builder()
-                        .status(HttpStatus.OK.value())
-                        .success(true)
-                        .message("URL deleted successfully.")
-                        .build();
+        @GetMapping
+        @Operation(summary = "Get All URLs")
+        public ResponseEntity<ApiResponse<List<UrlResponse>>> getAllUrls() {
 
-        return ResponseEntity.ok(apiResponse);
-    }
+                List<UrlResponse> response = urlService.getAllUrls();
+
+                ApiResponse<List<UrlResponse>> apiResponse = ApiResponse.<List<UrlResponse>>builder()
+                                .status(HttpStatus.OK.value())
+                                .success(true)
+                                .message("URLs fetched successfully.")
+                                .data(response)
+                                .build();
+
+                return ResponseEntity.ok(apiResponse);
+        }
+
+        @DeleteMapping("/{shortCode}")
+        @Operation(summary = "Delete Short URL")
+        public ResponseEntity<ApiResponse<Void>> deleteUrl(
+                        @PathVariable String shortCode) {
+
+                urlService.deleteUrl(shortCode);
+
+                ApiResponse<Void> apiResponse = ApiResponse.<Void>builder()
+                                .status(HttpStatus.OK.value())
+                                .success(true)
+                                .message("URL deleted successfully.")
+                                .build();
+
+                return ResponseEntity.ok(apiResponse);
+        }
 
 }

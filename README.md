@@ -15,6 +15,7 @@ A production-ready URL Shortener built using **Java 21**, **Spring Boot**, **Pos
 
 - 🔗 Shorten long URLs
 - 🚀 Redirect using unique short codes
+- ⏳ URL Expiration Support
 - 📊 Click tracking
 - ✅ Input validation
 - 🌍 RESTful APIs
@@ -70,6 +71,18 @@ src
 
 ---
 
+## ⏳ URL Expiration
+
+URLs can optionally expire.
+
+If `expiresAt` is omitted, the system automatically applies the default expiration period configured by the application.
+
+Expired URLs:
+
+- return **410 Gone**
+- cannot be redirected
+- are automatically deactivated by a scheduled background job
+
 ## 📦 Request Example
 
 ### Create Short URL
@@ -80,7 +93,8 @@ POST /api/v1/urls
 
 ```json
 {
-    "url": "https://google.com"
+    "url":"https://google.com",
+    "expiresAt":"2027-12-31T23:59:59"
 }
 ```
 
@@ -88,14 +102,15 @@ Response
 
 ```json
 {
-    "status": 201,
-    "success": true,
-    "message": "Short URL created successfully.",
-    "data": {
-        "shortUrl": "http://localhost:8080/2EsuEPU",
-        "shortCode": "2EsuEPU",
-        "originalUrl": "https://google.com"
-    }
+  "status":201,
+  "success":true,
+  "message":"Short URL created successfully.",
+  "data":{
+      "shortUrl":"http://localhost:8080/AbCd123",
+      "shortCode":"AbCd123",
+      "originalUrl":"https://google.com",
+      "expiresAt":"2027-12-31T23:59:59"
+  }
 }
 ```
 

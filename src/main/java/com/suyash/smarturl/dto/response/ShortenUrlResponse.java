@@ -15,4 +15,6 @@ public class ShortenUrlResponse {
 
     private String originalUrl;
 
+    private String expiresAt;
+
 }

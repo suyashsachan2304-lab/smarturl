@@ -4,6 +4,8 @@ import com.suyash.smarturl.dto.request.ShortenUrlRequest;
 import com.suyash.smarturl.dto.response.ShortenUrlResponse;
 import com.suyash.smarturl.dto.response.UrlResponse;
 import com.suyash.smarturl.entity.UrlMapping;
+import com.suyash.smarturl.exception.UrlNotFoundException;
+import com.suyash.smarturl.exception.UrlExpiredException;
 import com.suyash.smarturl.mapper.UrlMapper;
 import com.suyash.smarturl.repository.UrlRepository;
 import com.suyash.smarturl.service.UrlService;
@@ -11,9 +13,8 @@ import com.suyash.smarturl.util.ShortCodeGenerator;
 import com.suyash.smarturl.util.UrlValidator;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import com.suyash.smarturl.exception.UrlNotFoundException;
-import java.time.LocalDateTime;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -30,6 +31,7 @@ public class UrlServiceImpl implements UrlService {
             UrlMapper urlMapper,
             UrlValidator urlValidator,
             ShortCodeGenerator shortCodeGenerator) {
+
         this.urlRepository = urlRepository;
         this.urlMapper = urlMapper;
         this.urlValidator = urlValidator;
@@ -43,16 +45,16 @@ public class UrlServiceImpl implements UrlService {
 
         urlValidator.validate(normalizedUrl);
 
-        return urlRepository.findByOriginalUrl(normalizedUrl)
+        request.setUrl(normalizedUrl);
+
+        return urlRepository.findByOriginalUrlAndActiveTrue(normalizedUrl)
+                .filter(this::isNotExpired)
                 .map(urlMapper::toShortenResponse)
-                .orElseGet(() -> createShortUrl(request, normalizedUrl));
+                .orElseGet(() -> createShortUrl(request));
     }
 
     private ShortenUrlResponse createShortUrl(
-            ShortenUrlRequest request,
-            String normalizedUrl) {
-
-        request.setUrl(normalizedUrl);
+            ShortenUrlRequest request) {
 
         String shortCode = generateUniqueShortCode();
 
@@ -68,7 +70,9 @@ public class UrlServiceImpl implements UrlService {
         String shortCode;
 
         do {
+
             shortCode = shortCodeGenerator.generate();
+
         } while (urlRepository.existsByShortCode(shortCode));
 
         return shortCode;
@@ -77,22 +81,21 @@ public class UrlServiceImpl implements UrlService {
     @Override
     public UrlResponse getUrl(String shortCode) {
 
-        UrlMapping urlMapping = getActiveUrlMapping(shortCode);
+        UrlMapping entity = getActiveUrlMapping(shortCode);
 
-        return urlMapper.toResponse(urlMapping);
+        return urlMapper.toResponse(entity);
     }
 
     @Override
     public String getOriginalUrl(String shortCode) {
 
-        UrlMapping urlMapping = getActiveUrlMapping(shortCode);
+        UrlMapping entity = getActiveUrlMapping(shortCode);
 
-        urlMapping.setClickCount(
-                urlMapping.getClickCount() + 1);
+        entity.setClickCount(entity.getClickCount() + 1);
 
-        urlRepository.save(urlMapping);
+        urlRepository.save(entity);
 
-        return urlMapping.getOriginalUrl();
+        return entity.getOriginalUrl();
     }
 
     @Override
@@ -107,29 +110,28 @@ public class UrlServiceImpl implements UrlService {
     @Override
     public void deleteUrl(String shortCode) {
 
-        UrlMapping urlMapping = getActiveUrlMapping(shortCode);
+        UrlMapping entity = getActiveUrlMapping(shortCode);
 
-        urlRepository.delete(urlMapping);
+        urlRepository.delete(entity);
     }
 
     private UrlMapping getActiveUrlMapping(String shortCode) {
 
-        UrlMapping urlMapping = urlRepository.findByShortCode(shortCode)
-                .orElseThrow(() -> new UrlNotFoundException(
-                        "Short URL not found."));
+        UrlMapping entity = urlRepository.findByShortCodeAndActiveTrue(shortCode)
+                .orElseThrow(() -> new UrlNotFoundException("Short URL not found."));
 
-        if (!Boolean.TRUE.equals(urlMapping.getActive())) {
-            throw new UrlNotFoundException(
-                    "Short URL has been disabled.");
-        }
-
-        if (urlMapping.getExpiresAt() != null
-                && urlMapping.getExpiresAt().isBefore(LocalDateTime.now())) {
-
-            throw new UrlNotFoundException(
+        if (!isNotExpired(entity)) {
+            throw new UrlExpiredException(
                     "Short URL has expired.");
         }
 
-        return urlMapping;
+        return entity;
     }
+
+    private boolean isNotExpired(UrlMapping entity) {
+
+        return entity.getExpiresAt() == null
+                || entity.getExpiresAt().isAfter(LocalDateTime.now());
+    }
+
 }

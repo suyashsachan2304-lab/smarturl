@@ -27,8 +27,11 @@ public class UrlMapper {
             String shortCode
     ) {
 
-        LocalDateTime expiryDate = LocalDateTime.now()
-                .plusDays(appProperties.getDefaultExpiryDays());
+        LocalDateTime expiryDate =
+                request.getExpiresAt() != null
+                        ? request.getExpiresAt()
+                        : LocalDateTime.now()
+                        .plusDays(appProperties.getDefaultExpiryDays());
 
         return UrlMapping.builder()
                 .originalUrl(request.getUrl())
@@ -46,6 +49,7 @@ public class UrlMapper {
                 .shortUrl(entity.getShortUrl())
                 .shortCode(entity.getShortCode())
                 .originalUrl(entity.getOriginalUrl())
+                .expiresAt(format(entity.getExpiresAt()))
                 .build();
     }
 
