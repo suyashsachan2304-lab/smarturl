@@ -5,13 +5,19 @@ import com.suyash.smarturl.constants.AppConstants;
 import com.suyash.smarturl.dto.request.ShortenUrlRequest;
 import com.suyash.smarturl.dto.response.ShortenUrlResponse;
 import com.suyash.smarturl.dto.response.UrlResponse;
+import com.suyash.smarturl.service.QrCodeService;
 import com.suyash.smarturl.service.UrlService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 import java.net.URI;
 import java.util.List;
@@ -22,9 +28,14 @@ import java.util.List;
 public class UrlController {
 
         private final UrlService urlService;
+        private final QrCodeService qrCodeService;
 
-        public UrlController(UrlService urlService) {
+        public UrlController(
+                        UrlService urlService,
+                        QrCodeService qrCodeService) {
+
                 this.urlService = urlService;
+                this.qrCodeService = qrCodeService;
         }
 
         @PostMapping
@@ -99,6 +110,38 @@ public class UrlController {
                 return ResponseEntity.status(HttpStatus.FOUND)
                                 .location(URI.create(originalUrl))
                                 .build();
+        }
+
+        @GetMapping(value = "/{shortCode}/qr", produces = {
+                        MediaType.IMAGE_PNG_VALUE,
+                        MediaType.IMAGE_JPEG_VALUE
+        })
+        @Operation(summary = "Generate QR Code")
+        public ResponseEntity<byte[]> generateQrCode(
+                        @PathVariable String shortCode,
+
+                        @RequestParam(defaultValue = "false") boolean download) {
+
+                byte[] image = qrCodeService.generateQrCode(shortCode);
+
+                HttpHeaders headers = new HttpHeaders();
+
+                headers.setContentType(MediaType.IMAGE_PNG);
+
+                if (download) {
+
+                        headers.setContentDisposition(
+                                        ContentDisposition
+                                                        .attachment()
+                                                        .filename(shortCode + ".png")
+                                                        .build());
+
+                }
+
+                return new ResponseEntity<>(
+                                image,
+                                headers,
+                                HttpStatus.OK);
         }
 
         @GetMapping

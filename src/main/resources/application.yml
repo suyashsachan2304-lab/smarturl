@@ -57,6 +57,10 @@ app:
   base-url: http://localhost:8080
   short-code-length: 7
   default-expiry-days: 365
+  qr:
+    width: 300
+    height: 300
+    image-format: PNG
 
 springdoc:
   swagger-ui:

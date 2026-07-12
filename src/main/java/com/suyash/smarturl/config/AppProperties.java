@@ -15,4 +15,18 @@ public class AppProperties {
 
     private int defaultExpiryDays = 365;
 
+    private Qr qr = new Qr();
+
+    @Getter
+    @Setter
+    public static class Qr {
+
+        private int width = 300;
+
+        private int height = 300;
+
+        private String imageFormat = "PNG";
+
+    }
+
 }
