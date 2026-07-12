@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0](https://github.com/suyashsachan2304-lab/smarturl/compare/v1.1.0...v1.2.0) (2026-07-12)
+
+
+### Features
+
+* add QR code generation ([3e901b3](https://github.com/suyashsachan2304-lab/smarturl/commit/3e901b397bdaa843376a8aaf2d19f54be15cc33d))
+* add QR code generation ([c97639f](https://github.com/suyashsachan2304-lab/smarturl/commit/c97639f3a7c1222681eec2fc2296e657f710052a))
+
 ## [1.1.0](https://github.com/suyashsachan2304-lab/smarturl/compare/v1.0.3...v1.1.0) (2026-07-11)
 
 
