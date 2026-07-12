@@ -27,6 +27,4 @@ public interface UrlRepository extends JpaRepository<UrlMapping, Long> {
 
     List<UrlMapping> findByActiveTrueAndExpiresAtBefore(LocalDateTime now);
 
-    boolean existsByShortCodeIgnoreCase(String shortCode);
-
 }

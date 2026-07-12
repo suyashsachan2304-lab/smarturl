@@ -79,21 +79,11 @@ public class UrlServiceImpl implements UrlService {
             aliasValidator.validate(alias);
 
             if (urlRepository.existsByShortCode(alias)) {
-
                 throw new DuplicateAliasException(
                         "Custom alias already exists.");
             }
 
             shortCode = alias;
-
-            if (urlRepository.existsByShortCodeIgnoreCase(
-                    request.getCustomAlias())) {
-
-                throw new DuplicateAliasException(
-                        "Custom alias already exists.");
-            }
-
-            shortCode = request.getCustomAlias().trim();
 
         } else {
 
@@ -158,11 +148,13 @@ public class UrlServiceImpl implements UrlService {
         urlRepository.delete(entity);
     }
 
-    private UrlMapping getActiveUrlMapping(String shortCode) {
+    @Override
+    public UrlMapping getActiveUrlMapping(String shortCode) {
 
         shortCode = shortCode.trim().toLowerCase();
 
-        UrlMapping entity = urlRepository.findByShortCodeAndActiveTrue(shortCode)
+        UrlMapping entity = urlRepository
+                .findByShortCodeAndActiveTrue(shortCode)
                 .orElseThrow(() -> new UrlNotFoundException("Short URL not found."));
 
         if (!isNotExpired(entity)) {
