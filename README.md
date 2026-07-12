@@ -6,10 +6,14 @@ A production-ready URL Shortener built using **Java 21**, **Spring Boot**, **Pos
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5-brightgreen)
 ![Postgres](https://img.shields.io/badge/PostgreSQL-16-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Release](https://img.shields.io/github/v/release/suyashsachan2304-lab/smarturl)
-![GitHub Release](https://img.shields.io/github/release-date/suyashsachan2304-lab/smarturl)
-
+![Pull Requests Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
+![Release](https://img.shields.io/github/v/release/suyashsachan2304-lab/smarturl?display_name=tag)
+![Release Date](https://img.shields.io/github/release-date/suyashsachan2304-lab/smarturl)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/suyashsachan2304-lab/smarturl/build.yml?branch=main)
+![GitHub issues](https://img.shields.io/github/issues/suyashsachan2304-lab/smarturl)
+![GitHub last commit](https://img.shields.io/github/last-commit/suyashsachan2304-lab/smarturl)
 ![Build](https://github.com/suyashsachan2304-lab/smarturl/actions/workflows/build.yml/badge.svg)
+[![SmartURL CI](https://github.com/suyashsachan2304-lab/smarturl/actions/workflows/build.yml/badge.svg)](https://github.com/suyashsachan2304-lab/smarturl/actions/workflows/build.yml)
 
 ---
 
@@ -400,6 +404,40 @@ Every push to the repository automatically triggers:
 - ✅ Artifact Upload
 
 This ensures every published release is reproducible and built from validated source code.
+
+---
+
+## 🌿 Development Workflow
+
+This repository follows a pull request based development workflow.
+
+### Workflow
+
+1. Create a feature branch
+
+```bash
+git checkout -b feature/<feature-name>
+```
+
+2. Commit using Conventional Commits
+
+```bash
+git commit -m "feat: add custom alias support"
+```
+
+3. Push the feature branch
+
+```bash
+git push -u origin feature/<feature-name>
+```
+
+4. Open a Pull Request to the `main` branch.
+
+5. After the Pull Request is merged, Release Please automatically creates a release Pull Request containing the next semantic version and generated changelog.
+
+6. Merge the release Pull Request to publish the new GitHub Release.
+
+> **Note:** The `main` branch is protected. Direct pushes are not allowed and all changes must be merged through Pull Requests.
 
 ---
 
