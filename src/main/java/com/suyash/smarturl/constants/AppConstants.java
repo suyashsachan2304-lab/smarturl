@@ -15,6 +15,8 @@ public final class AppConstants {
 
     // Headers
     public static final String LOCATION = "Location";
+    public static final String X_FORWARDED_FOR = "X-Forwarded-For";
+    public static final String RETRY_AFTER = "Retry-After";
 
     // Messages
     public static final String URL_CREATED = "Short URL created successfully.";
@@ -23,13 +25,14 @@ public final class AppConstants {
     public static final String URL_EXPIRED = "Short URL has expired.";
 
     // Regex
-    public static final String URL_REGEX =
-            "^(https?:\\/\\/)([\\w.-]+)(:[0-9]+)?(\\/.*)?$";
+    public static final String URL_REGEX = "^(https?:\\/\\/)([\\w.-]+)(:[0-9]+)?(\\/.*)?$";
 
     // Short URL
-    public static final String BASE62 =
-            "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    public static final String BASE62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
     public static final int MAX_SHORT_CODE_LENGTH = 10;
     public static final int MIN_SHORT_CODE_LENGTH = 6;
+
+    // Rate Limiter
+    public static final String TOO_MANY_REQUESTS = "Too many requests. Please try again later.";
 }

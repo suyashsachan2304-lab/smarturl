@@ -31,7 +31,7 @@ spring:
       port: 6379
 
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 management:
   endpoints:
@@ -67,3 +67,19 @@ springdoc:
     path: /swagger-ui.html
   api-docs:
     path: /v3/api-docs
+
+rate-limiter:
+  enabled: true
+  strategy: TOKEN_BUCKET
+  storage: MEMORY
+  capacity: 20
+  refill-tokens: 20
+  refill-duration: 60s
+  bucket-expiry: 30m
+  excluded-paths:
+    - /swagger-ui/**
+    - /swagger-ui.html
+    - /v3/api-docs/**
+    - /actuator/**
+    - /favicon.ico
+  trust-proxy: false

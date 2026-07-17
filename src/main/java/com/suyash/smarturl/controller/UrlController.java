@@ -2,6 +2,7 @@ package com.suyash.smarturl.controller;
 
 import com.suyash.smarturl.common.ApiResponse;
 import com.suyash.smarturl.constants.AppConstants;
+import com.suyash.smarturl.controller.annotation.RateLimitedApi;
 import com.suyash.smarturl.dto.request.ShortenUrlRequest;
 import com.suyash.smarturl.dto.response.ShortenUrlResponse;
 import com.suyash.smarturl.dto.response.UrlResponse;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import java.net.URI;
 import java.util.List;
@@ -39,6 +41,7 @@ public class UrlController {
         }
 
         @PostMapping
+        @RateLimitedApi
         @Operation(summary = "Create Short URL", description = """
                         Creates a shortened URL.
 
@@ -74,6 +77,7 @@ public class UrlController {
         }
 
         @GetMapping("/{shortCode}/details")
+        @RateLimitedApi
         @Operation(summary = "Get URL Details")
         public ResponseEntity<ApiResponse<UrlResponse>> getUrl(
                         @PathVariable String shortCode) {
@@ -91,6 +95,7 @@ public class UrlController {
         }
 
         @GetMapping("/{shortCode}")
+        @RateLimitedApi
         @Operation(summary = "Redirect to Original URL", description = """
                         Redirects the client to the original URL.
 
@@ -116,6 +121,7 @@ public class UrlController {
                         MediaType.IMAGE_PNG_VALUE,
                         MediaType.IMAGE_JPEG_VALUE
         })
+        @RateLimitedApi
         @Operation(summary = "Generate QR Code")
         public ResponseEntity<byte[]> generateQrCode(
                         @PathVariable String shortCode,
@@ -145,6 +151,7 @@ public class UrlController {
         }
 
         @GetMapping
+        @RateLimitedApi
         @Operation(summary = "Get All URLs")
         public ResponseEntity<ApiResponse<List<UrlResponse>>> getAllUrls() {
 
@@ -161,6 +168,7 @@ public class UrlController {
         }
 
         @DeleteMapping("/{shortCode}")
+        @RateLimitedApi
         @Operation(summary = "Delete Short URL")
         public ResponseEntity<ApiResponse<Void>> deleteUrl(
                         @PathVariable String shortCode) {
