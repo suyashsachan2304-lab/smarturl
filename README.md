@@ -498,7 +498,7 @@ sequenceDiagram
     participant BucketStore
     participant Controller
 
-    Client->>Interceptor: HTTP Request
+    Client->>Interceptor: HTTP Request 
 
     Interceptor->>RateLimiter: allowRequest()
 
