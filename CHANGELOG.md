@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0](https://github.com/suyashsachan2304-lab/smarturl/compare/v1.2.0...v1.3.0) (2026-07-17)
+
+
+### Features
+
+* add token bucket rate limiter ([5b4ba99](https://github.com/suyashsachan2304-lab/smarturl/commit/5b4ba9902aa39af29ed87594c609ed226d47aaa2))
+* add token bucket rate limiter ([3cfdd88](https://github.com/suyashsachan2304-lab/smarturl/commit/3cfdd88c829e7f41c3365206f938ea9d56286076))
+
 ## [1.2.0](https://github.com/suyashsachan2304-lab/smarturl/compare/v1.1.0...v1.2.0) (2026-07-12)
 
 
