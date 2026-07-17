@@ -12,6 +12,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.suyash.smarturl.constants.AppConstants;
+
 import java.util.List;
 
 @RestControllerAdvice
@@ -152,6 +154,26 @@ public class GlobalExceptionHandler {
                                 ex.getMessage(),
                                 request,
                                 null);
+        }
+
+        @ExceptionHandler(RateLimitExceededException.class)
+        public ResponseEntity<ErrorResponse> handleRateLimitExceeded(
+                        RateLimitExceededException ex,
+                        HttpServletRequest request) {
+
+                ErrorResponse response = ErrorResponse.builder()
+                                .status(HttpStatus.TOO_MANY_REQUESTS.value())
+                                .error(HttpStatus.TOO_MANY_REQUESTS.getReasonPhrase())
+                                .message(ex.getMessage())
+                                .path(request.getRequestURI())
+                                .build();
+
+                return ResponseEntity
+                                .status(HttpStatus.TOO_MANY_REQUESTS)
+                                .header(
+                                                AppConstants.RETRY_AFTER,
+                                                String.valueOf(ex.getRetryAfter()))
+                                .body(response);
         }
 
         private ResponseEntity<ErrorResponse> buildResponse(

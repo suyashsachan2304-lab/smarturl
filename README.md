@@ -2,6 +2,8 @@
 
 A production-ready URL Shortener built using **Java 21**, **Spring Boot**, **PostgreSQL**, and **Docker**.
 
+SmartURL includes enterprise-grade capabilities such as configurable URL expiration, QR code generation, custom aliases, click analytics, and a thread-safe **Token Bucket Rate Limiter** for protecting APIs from abuse.
+
 ![Java](https://img.shields.io/badge/Java-21-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5-brightgreen)
 ![Postgres](https://img.shields.io/badge/PostgreSQL-16-blue)
@@ -25,6 +27,7 @@ A production-ready URL Shortener built using **Java 21**, **Spring Boot**, **Pos
 - 📊 Click tracking
 - 🎯 Custom Alias Support
 - 📱 QR Code Generation
+- 🚦 Token Bucket Rate Limiting
 - ✅ Input validation
 - 🌍 RESTful APIs
 - 📖 Interactive Swagger/OpenAPI documentation
@@ -49,6 +52,8 @@ A production-ready URL Shortener built using **Java 21**, **Spring Boot**, **Pos
 | Containerization | Docker & Docker Compose |
 | Testing | JUnit 5 |
 | QR Code Generation | ZXing 3.5.3 |
+| Concurrency | ConcurrentHashMap, AtomicLong, ReentrantLock |
+| Rate Limiting | Token Bucket Algorithm |
 
 ---
 
@@ -59,6 +64,9 @@ A production-ready URL Shortener built using **Java 21**, **Spring Boot**, **Pos
 - Custom Alias Support
 - Configurable URL Expiration
 - Automatic QR Code Generation
+- Token Bucket Rate Limiting
+- Lazy Token Refill
+- Thread-safe Request Processing
 - Conventional Commit based releases
 - Pull Request driven development
 
@@ -76,6 +84,7 @@ src
 ├── entity
 ├── exception
 ├── mapper
+├── ratelimiter
 ├── repository
 ├── scheduler
 ├── service
@@ -95,45 +104,11 @@ src
 | GET | `/api/v1/urls/{shortCode}/qr` | Generate QR Code |
 | DELETE | `/api/v1/urls/{shortCode}` | Delete URL |
 
+> **Note**
+>
+> Unless explicitly excluded through configuration (for example Swagger UI and health endpoints), all public APIs are protected by the built-in Token Bucket Rate Limiter.
+
 ---
-
-## ⏳ URL Expiration
-
-URLs can optionally expire.
-
-If `expiresAt` is omitted, the system automatically applies the default expiration period configured by the application.
-
-Expired URLs:
-
-- return **410 Gone**
-- cannot be redirected
-- are automatically deactivated by a scheduled background job
-
-## 📱 Generate QR Code
-
-### Display QR
-
-```http
-GET /api/v1/urls/google/qr
-```
-
-Returns
-
-```
-image/png
-```
-
-### Download QR
-
-```http
-GET /api/v1/urls/google/qr?download=true
-```
-
-Downloads
-
-```
-google.png
-```
 
 ## 📦 Request Example
 
@@ -165,6 +140,119 @@ Response
       "expiresAt":"2027-12-31T23:59:59"
   }
 }
+```
+
+---
+
+## 🚦 API Rate Limiting
+
+SmartURL protects its APIs using a **Token Bucket Rate Limiter**.
+
+### Features
+
+- Configurable request limits
+- Burst traffic support
+- Thread-safe implementation
+- Automatic token refill
+- HTTP `429 Too Many Requests`
+- `Retry-After` response header
+- `X-RateLimit-Remaining` response header
+- Automatic cleanup of inactive client buckets
+
+The implementation uses the Token Bucket algorithm with lazy token refill, thread-safe bucket management, and configurable request limits. The design allows future migration to a distributed Redis-backed implementation without changing the public API.
+
+For implementation details, see the documentation in the `docs/ratelimiter` directory.
+
+---
+
+### Rate Limiting Example
+
+After the configured request limit is exceeded, the API responds with **HTTP 429 Too Many Requests**.
+
+```http
+POST /api/v1/urls
+```
+
+Response
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 15
+X-RateLimit-Remaining: 0
+Content-Type: application/json
+```
+
+```json
+{
+  "status": 429,
+  "success": false,
+  "message": "Rate limit exceeded. Please try again after 15 seconds.",
+  "timestamp": "2026-07-17T18:30:25Z"
+}
+```
+
+Once the retry period has elapsed, requests are accepted again automatically.
+
+```http
+HTTP/1.1 201 Created
+
+X-RateLimit-Remaining: 9
+```
+
+```json
+{
+  "status": 201,
+  "success": true,
+  "message": "Short URL created successfully.",
+  "data": {
+    "shortUrl": "http://localhost:8080/google",
+    "shortCode": "google",
+    "originalUrl": "https://google.com",
+    "expiresAt": "2027-12-31T23:59:59"
+  }
+}
+```
+
+---
+
+## ⏳ URL Expiration
+
+URLs can optionally expire.
+
+If `expiresAt` is omitted, the system automatically applies the default expiration period configured by the application.
+
+Expired URLs:
+
+- return **410 Gone**
+- cannot be redirected
+- are automatically deactivated by a scheduled background job
+
+---
+
+## 📱 Generate QR Code
+
+### Display QR
+
+```http
+GET /api/v1/urls/google/qr
+```
+
+Returns
+
+```
+image/png
+```
+
+### Download QR
+
+```http
+GET /api/v1/urls/google/qr?download=true
+```
+
+Downloads
+
+```
+google.png
 ```
 
 ---
@@ -265,6 +353,8 @@ flowchart TD
 
     Client[Client / Browser]
 
+    RateLimiter[RateLimitInterceptor]
+
     UrlController[REST Controller]
 
     UrlService[URL Service]
@@ -281,7 +371,9 @@ flowchart TD
 
     Swagger[Swagger UI]
 
-    Client -->|REST Request| UrlController
+    Client -->|REST Request| RateLimiter
+
+    RateLimiter --> UrlController
 
     Swagger --> UrlController
 
@@ -306,13 +398,16 @@ flowchart TD
 sequenceDiagram
 
     participant Client
+    participant RateLimitInterceptor
     participant Controller
     participant Service
     participant Mapper
     participant Repository
     participant PostgreSQL
 
-    Client->>Controller: POST /api/v1/urls
+    Client->>RateLimitInterceptor
+
+    RateLimitInterceptor->>Controller: POST /api/v1/urls
 
     Controller->>Service: shortenUrl(request)
 
@@ -341,6 +436,7 @@ sequenceDiagram
 sequenceDiagram
 
     participant Client
+    participant RateLimitInterceptor
     participant Controller
     participant QRService
     participant URLService
@@ -348,7 +444,9 @@ sequenceDiagram
     participant PostgreSQL
     participant ZXing
 
-    Client->>Controller: GET /{shortCode}/qr
+   Client->>RateLimitInterceptor
+
+    RateLimitInterceptor->>Controller: GET /{shortCode}/qr
 
     Controller->>QRService: generateQrCode(shortCode)
 
@@ -379,12 +477,15 @@ sequenceDiagram
 sequenceDiagram
 
     participant User
+    participant RateLimitInterceptor
     participant Controller
     participant Service
     participant Repository
     participant PostgreSQL
 
-    User->>Controller: GET /{shortCode}
+    User->>RateLimitInterceptor
+
+    RateLimitInterceptor->>Controller: GET /{shortCode}
 
     Controller->>Service: getOriginalUrl()
 
@@ -405,6 +506,40 @@ sequenceDiagram
     Service-->>Controller: Original URL
 
     Controller-->>User: HTTP 302 Redirect
+```
+
+## 🚦 Rate Limiting Flow
+
+```mermaid
+sequenceDiagram
+
+    participant Client
+    participant Interceptor
+    participant RateLimiter
+    participant BucketStore
+    participant Controller
+
+    Client->>Interceptor: HTTP Request
+
+    Interceptor->>RateLimiter: allowRequest()
+
+    RateLimiter->>BucketStore: getBucket()
+
+    BucketStore-->>RateLimiter: TokenBucket
+
+    alt Tokens Available
+
+        RateLimiter-->>Interceptor: Allowed
+
+        Interceptor->>Controller: Continue
+
+    else Rate Limit Exceeded
+
+        RateLimiter-->>Interceptor: Reject
+
+        Interceptor-->>Client: HTTP 429
+
+    end
 ```
 
 ## 🗄 Database Schema
@@ -432,7 +567,11 @@ erDiagram
 ```mermaid
 graph LR
 
-Controller
+Client
+
+Client --> RateLimitInterceptor
+
+RateLimitInterceptor --> Controller
 
 Controller --> UrlService
 
@@ -597,25 +736,40 @@ git push -u origin feature/<feature-name>
 
 ## 🚧 Roadmap
 
-## API
-- Rate Limiting
+# API
 - Retry
 - Circuit Breaker
 
 ## Performance
 - Redis Caching
 
-## Analytics
+# Analytics
 - Kafka Click Analytics
 
-## Security
+# Security
 - JWT Authentication
 - User Management
 
-## Operations
+# Operations
 - Prometheus & Grafana
 - Flyway
 - Testcontainers
+
+# Learning Roadmap
+
+| Version | Focus Area |
+|----------|------------|
+| v1.0 | URL Shortening Fundamentals |
+| v1.0 | URL Expiration |
+| v1.1 | Custom Alias |
+| v1.2 | QR Code Generation |
+| v1.3 | Rate Limiting |
+| v1.4 | Retry & Circuit Breaker |
+| v1.5 | Redis Caching |
+| v1.6 | Kafka Analytics |
+| v1.7 | JWT Authentication |
+| v1.8 | Observability |
+| v2.0 | High Availability & Scalability |
 
 ---
 
