@@ -396,116 +396,95 @@ flowchart TD
 
 ```mermaid
 sequenceDiagram
+    participant C as Client
+    participant RLI as RateLimitInterceptor
+    participant CT as Controller
+    participant S as Service
+    participant M as Mapper
+    participant R as Repository
+    participant DB as PostgreSQL
 
-    participant Client
-    participant RateLimitInterceptor
-    participant Controller
-    participant Service
-    participant Mapper
-    participant Repository
-    participant PostgreSQL
+    C->>RLI: POST /api/v1/urls
+    RLI->>CT: Allow request
 
-    Client->>RateLimitInterceptor
+    CT->>S: shortenUrl(request)
+    S->>M: toEntity()
+    M-->>S: UrlMapping
 
-    RateLimitInterceptor->>Controller: POST /api/v1/urls
+    S->>R: save(entity)
+    R->>DB: INSERT URL_MAPPING
+    DB-->>R: Saved Entity
+    R-->>S: UrlMapping
 
-    Controller->>Service: shortenUrl(request)
+    S->>M: toShortenResponse()
+    M-->>S: ShortenUrlResponse
 
-    Service->>Mapper: toEntity()
-
-    Mapper-->>Service: UrlMapping
-
-    Service->>Repository: save(entity)
-
-    Repository->>PostgreSQL: INSERT URL_MAPPING
-
-    PostgreSQL-->>Repository: Saved Entity
-
-    Repository-->>Service: UrlMapping
-
-    Service->>Mapper: toShortenResponse()
-
-    Mapper-->>Controller: ShortenUrlResponse
-
-    Controller-->>Client: 201 Created
+    S-->>CT: Response
+    CT-->>C: 201 Created
 ```
 
 ## 📱 QR Code Flow
 
 ```mermaid
 sequenceDiagram
+    participant C as Client
+    participant RLI as RateLimitInterceptor
+    participant CT as Controller
+    participant QR as QRService
+    participant US as URLService
+    participant R as Repository
+    participant DB as PostgreSQL
+    participant ZX as ZXing
 
-    participant Client
-    participant RateLimitInterceptor
-    participant Controller
-    participant QRService
-    participant URLService
-    participant Repository
-    participant PostgreSQL
-    participant ZXing
+    C->>RLI: GET /{shortCode}/qr
+    RLI->>CT: Allow request
 
-   Client->>RateLimitInterceptor
+    CT->>QR: generateQrCode(shortCode)
 
-    RateLimitInterceptor->>Controller: GET /{shortCode}/qr
+    QR->>US: getActiveUrlMapping(shortCode)
 
-    Controller->>QRService: generateQrCode(shortCode)
+    US->>R: findByShortCode()
+    R->>DB: SELECT URL_MAPPING
+    DB-->>R: UrlMapping
+    R-->>US: UrlMapping
 
-    QRService->>URLService: getActiveUrlMapping(shortCode)
+    US-->>QR: Active UrlMapping
 
-    URLService->>Repository: findByShortCode()
+    QR->>ZX: Generate QR Image
+    ZX-->>QR: QR Image
 
-    Repository->>PostgreSQL: SELECT URL_MAPPING
-
-    PostgreSQL-->>Repository: UrlMapping
-
-    Repository-->>URLService: UrlMapping
-
-    URLService-->>QRService: Active UrlMapping
-
-    QRService->>ZXing: Generate QR Image
-
-    ZXing-->>QRService: QR Image
-
-    QRService-->>Controller: byte[]
-
-    Controller-->>Client: image/png
+    QR-->>CT: byte[]
+    CT-->>C: image/png
 ```
 
 ## 🔗 Redirect Flow
 
 ```mermaid
 sequenceDiagram
+    participant U as User
+    participant RLI as RateLimitInterceptor
+    participant CT as Controller
+    participant S as Service
+    participant R as Repository
+    participant DB as PostgreSQL
 
-    participant User
-    participant RateLimitInterceptor
-    participant Controller
-    participant Service
-    participant Repository
-    participant PostgreSQL
+    U->>RLI: GET /{shortCode}
+    RLI->>CT: Allow request
 
-    User->>RateLimitInterceptor
+    CT->>S: getOriginalUrl()
 
-    RateLimitInterceptor->>Controller: GET /{shortCode}
+    S->>R: findByShortCode()
+    R->>DB: SELECT URL_MAPPING
+    DB-->>R: UrlMapping
+    R-->>S: UrlMapping
 
-    Controller->>Service: getOriginalUrl()
+    S->>R: Increment Click Count
+    R->>DB: UPDATE click_count
+    DB-->>R: Success
+    R-->>S: Success
 
-    Service->>Repository: findByShortCode()
-
-    Repository->>PostgreSQL: SELECT URL_MAPPING
-
-    PostgreSQL-->>Repository: UrlMapping
-
-    Repository-->>Service: UrlMapping
-
-    Service->>Repository: Increment Click Count
-
-    Repository->>PostgreSQL: UPDATE click_count
-
-    Repository-->>Service: Success
-
-    Service-->>Controller: Original URL
-
-    Controller-->>User: HTTP 302 Redirect
+    S-->>CT: Original URL
+    CT-->>U: HTTP 302 Redirect
 ```
 
 ## 🚦 Rate Limiting Flow
